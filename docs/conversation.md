@@ -20,11 +20,11 @@ The repository contains:
 
 ### Progress
 
-1.  **Dependencies**: Added `package.json` with `shadow-cljs` and `sql.js`. Added `shadow-cljs.edn`.
+1.  **Dependencies**: Added `package.json` with `shadow-cljs` and `@sqlite.org/sqlite-wasm`. Added `shadow-cljs.edn`.
 2.  **Code Porting**:
     - Renamed `src/datascript/storage/sql/core.clj` to `src/datascript/storage/sql/core.cljc`.
     - Abstracted database operations into conditional blocks (`#?(:clj ... :cljs ...)`).
-    - Implemented `sql.js` backend logic for CLJS (using `exec`, `run`, `step`, `get`, `prepare`, `free`).
+    - Implemented `sqlite-wasm` backend logic for CLJS (using `.exec`, `.prepare`, `.step`, `.get`, `.finalize`).
     - Guarded JVM specific code (imports, `Pool` record, `pool` function, macros with type hints) with `#?(:clj ...)`.
     - Added conditional type hints to avoid performance regressions on JVM.
 3.  **Testing**:
@@ -34,5 +34,5 @@ The repository contains:
 ### Next Steps (Deferred)
 
 1.  Configure `shadow-cljs` builds fully.
-2.  Write CLJS tests using `cljs.test` and `sql.js`.
+2.  Write CLJS tests using `cljs.test` and `@sqlite.org/sqlite-wasm`.
 3.  Verify CLJS tests pass.

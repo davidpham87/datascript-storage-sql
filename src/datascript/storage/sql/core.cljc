@@ -103,7 +103,7 @@
                (.addBatch stmt))
              (.executeBatch stmt)))
          :cljs
-         ;; JS (sql.js) implementation
+         ;; JS (@sqlite.org/sqlite-wasm) implementation
          (doseq [part (partition-all batch-size addr+data-seq)]
            (doseq [[addr data] part]
              (let [params (if binary?
@@ -115,7 +115,8 @@
                               (if (= 3 cnt)
                                 [addr content content]
                                 [addr content])))]
-               (.run conn sql (clj->js params)))))))))
+               ;; .exec(sql, {bind: params})
+               (.exec conn sql (clj->js {:bind params})))))))))
 
 (defn restore-impl
   #?(:clj [^Connection conn opts addr]
@@ -131,15 +132,17 @@
                (thaw-bytes (.getBytes rs 1))
                (thaw-str (.getString rs 1))))))
        :cljs
-       (let [stmt (.prepare conn sql (clj->js [addr]))]
+       (let [stmt (.prepare conn sql)]
          (try
+           (.bind stmt (clj->js [addr]))
            (when (.step stmt)
-             (let [val (.get stmt)]
+             ;; get([]) returns array of column values
+             (let [val (.get stmt (clj->js []))]
                (if binary?
                  (thaw-bytes (aget val 0))
                  (thaw-str (aget val 0)))))
            (finally
-             (.free stmt)))))))
+             (.finalize stmt)))))))
 
 (defn list-impl
   #?(:clj [^Connection conn opts]
@@ -157,10 +160,10 @@
          (try
            (loop [res (transient [])]
              (if (.step stmt)
-               (recur (conj! res (aget (.get stmt) 0)))
+               (recur (conj! res (aget (.get stmt (clj->js [])) 0)))
                (persistent! res)))
            (finally
-             (.free stmt)))))))
+             (.finalize stmt)))))))
 
 (defn delete-impl
   #?(:clj [^Connection conn opts addr-seq]
@@ -177,7 +180,8 @@
          :cljs
          (doseq [part (partition-all (:batch-size opts) addr-seq)]
            (doseq [addr part]
-             (.run conn sql (clj->js [addr]))))))))
+             ;; .exec(sql, {bind: [addr]})
+             (.exec conn sql (clj->js {:bind [addr]}))))))))
 
 (defmulti ddl
   (fn [opts]
@@ -222,7 +226,7 @@
     (merge {:ddl (ddl opts)} opts)))
 
 (defn make
-  "Create new DataScript storage from javax.sql.DataSource (JVM) or sql.js Database (CLJS).
+  "Create new DataScript storage from javax.sql.DataSource (JVM) or sqlite-wasm oo1.DB (CLJS).
 
    Mandatory opts:
 
