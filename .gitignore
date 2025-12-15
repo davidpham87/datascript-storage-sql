@@ -9,3 +9,9 @@
 pom.xml
 pom.xml.asc
 .rebl
+
+# Node modules
+node_modules/
+
+# Shadow-cljs
+.shadow-cljs/
