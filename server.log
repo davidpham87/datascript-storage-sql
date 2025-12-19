@@ -1,0 +1,7 @@
+Server running at http://localhost:8080
+PAGE LOG: Starting demo...
+PAGE LOG: Waiting for sqlite3-ready event...
+PAGE LOG: SQLite3 Init Module loaded to window.sqlite3InitModule
+404 Not Found: http://localhost:8080/favicon.ico
+PAGE LOG: Failed to load resource: the server responded with a status of 404 (Not Found)
+TEST FAILED: Success message not found within timeout.

@@ -1,6 +1,7 @@
 {:source-paths ["src" "dev"]
  :dependencies
- [[datascript "1.5.4"]]
+ [[datascript "1.7.3"]
+  [org.clojure/tools.namespace "1.4.4"]]
  :builds
  {:app
   {:target :browser

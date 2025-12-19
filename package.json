@@ -2,7 +2,9 @@
   "name": "datascript-storage-sql",
   "version": "0.0.0",
   "scripts": {
-    "test": "shadow-cljs compile test && node out/node-tests.js"
+    "test": "shadow-cljs compile test && node out/node-tests.js",
+    "setup:wasm": "mkdir -p public/wasm && cp -r node_modules/@sqlite.org/sqlite-wasm/sqlite-wasm/jswasm/* public/wasm/",
+    "build:demo": "npm run setup:wasm && shadow-cljs -A:dev release app"
   },
   "devDependencies": {
     "shadow-cljs": "2.28.4"

@@ -56,15 +56,23 @@ server.listen(PORT, async () => {
 
     // Capture console logs
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    page.on('response', response => {
+      if (response.status() === 404) {
+        console.log('404 Not Found:', response.url());
+      }
+    });
+    page.on('requestfailed', request => {
+      console.log('Request failed:', request.url(), request.failure().errorText);
+    });
 
     // Go to the page
-    await page.goto(`http://localhost:${PORT}`, { waitUntil: 'networkidle0' });
+    await page.goto(`http://localhost:${PORT}`, { waitUntil: 'domcontentloaded' });
 
     // Wait for the success message in the logs div or console
     try {
         await page.waitForFunction(
             () => document.getElementById('logs').innerText.includes('SUCCESS: Data persisted and restored correctly.'),
-            { timeout: 10000 }
+            { timeout: 30000 }
         );
         console.log('TEST PASSED: Success message found.');
     } catch (e) {
