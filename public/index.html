@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>DataScript SQL WASM Demo</title>
+    <style>
+      body { font-family: sans-serif; padding: 20px; }
+      .log { background: #f0f0f0; padding: 10px; border: 1px solid #ccc; white-space: pre-wrap; margin-top: 10px; }
+      button { margin-top: 10px; }
+    </style>
+  </head>
+  <body>
+    <h1>DataScript SQL WASM Demo</h1>
+    <div id="app">
+      <p>Initializing...</p>
+    </div>
+    <div id="logs" class="log"></div>
+
+    <script type="module">
+        import sqlite3InitModule from './wasm/sqlite3.mjs';
+        window.sqlite3InitModule = sqlite3InitModule;
+
+        // Dispatch an event so CLJS knows it's ready, or CLJS can just poll/wait.
+        // But since we control the load order (script is module, main.js is likely loaded after or we can defer),
+        // we'll see. Ideally we'd trigger the CLJS init from here or vice versa.
+        // For now, exposing it globally is enough for CLJS to pick it up.
+        console.log("SQLite3 Init Module loaded to window.sqlite3InitModule");
+    </script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

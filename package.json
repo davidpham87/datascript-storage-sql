@@ -8,6 +8,8 @@
     "shadow-cljs": "2.28.4"
   },
   "dependencies": {
-    "@sqlite.org/sqlite-wasm": "^3.51.1-build2"
+    "@sqlite.org/sqlite-wasm": "^3.51.1-build2",
+    "puppeteer": "^24.33.1",
+    "serve-handler": "^6.1.6"
   }
 }

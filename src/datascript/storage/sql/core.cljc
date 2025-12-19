@@ -1,4 +1,5 @@
 (ns datascript.storage.sql.core
+  #?(:cljs (:require-macros [datascript.storage.sql.core :refer [with-conn with-tx]]))
   (:require
     [clojure.edn :as edn]
     [clojure.string :as str]
@@ -14,44 +15,45 @@
        [java.util.concurrent.locks Condition Lock ReentrantLock])))
 
 (defmacro with-conn [[conn datasource] & body]
-  #?(:clj
-     (let [conn (vary-meta conn assoc :tag 'java.sql.Connection)]
-       `(let [^javax.sql.DataSource datasource# ~datasource]
-          (with-open [~conn (.getConnection datasource#)]
-            (locking ~conn
-              ~@body))))
-     :cljs
-     `(let [~conn ~datasource]
-        ~@body)))
+  (if (:ns &env)
+    ;; CLJS expansion
+    `(let [~conn ~datasource]
+       ~@body)
+    ;; CLJ expansion
+    (let [conn (vary-meta conn assoc :tag 'java.sql.Connection)]
+      `(let [^javax.sql.DataSource datasource# ~datasource]
+         (with-open [~conn (.getConnection datasource#)]
+           (locking ~conn
+             ~@body))))))
 
 (defmacro with-tx [conn & body]
-  #?(:clj
-     `(let [conn# ~conn]
-        (try
-          (.setAutoCommit conn# false)
-          ~@body
-          (.commit conn#)
-          (catch Exception e#
-            (try
-              (.rollback conn#)
-              (catch Exception ee#
-                (.addSuppressed e# ee#)))
-            (throw e#))
-          (finally
-            (.setAutoCommit conn# true))))
-     :cljs
-     `(let [conn# ~conn]
-        (try
-          (.exec conn# "BEGIN TRANSACTION")
-          ~@body
-          (.exec conn# "COMMIT")
-          (catch :default e#
-            (try
-              (.exec conn# "ROLLBACK")
-              (catch :default ee#
-                nil ;; ignore rollback error
-                ))
-            (throw e#))))))
+  (if (:ns &env)
+    ;; CLJS expansion
+    `(let [conn# ~conn]
+       (try
+         (.exec conn# "BEGIN TRANSACTION")
+         ~@body
+         (.exec conn# "COMMIT")
+         (catch :default e#
+           (try
+             (.exec conn# "ROLLBACK")
+             (catch :default ee#
+               nil))
+           (throw e#))))
+    ;; CLJ expansion
+    `(let [conn# ~conn]
+       (try
+         (.setAutoCommit conn# false)
+         ~@body
+         (.commit conn#)
+         (catch Exception e#
+           (try
+             (.rollback conn#)
+             (catch Exception ee#
+               (.addSuppressed e# ee#)))
+           (throw e#))
+         (finally
+           (.setAutoCommit conn# true))))))
 
 (defn execute!
   #?(:clj [^Connection conn sql]
