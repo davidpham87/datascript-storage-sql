@@ -15,3 +15,5 @@ node_modules/
 
 # Shadow-cljs
 .shadow-cljs/
+public/js/
+public/wasm/
